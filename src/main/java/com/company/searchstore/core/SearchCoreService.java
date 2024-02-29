@@ -1,5 +1,6 @@
 package com.company.searchstore.core;
 
+import com.company.searchstore.dto.Operator;
 import com.company.searchstore.dto.Property;
 import com.company.searchstore.exception.GeneralPaymentsException;
 import java.io.IOException;
@@ -13,6 +14,7 @@ import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.search.MatchQuery;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,13 +32,14 @@ public class SearchCoreService {
     public SearchResponse multiMatch(List<Property> properties, String searchText,
             Long offset, Long limit) {
         List<String> fields;
-        if (properties.get(0).equals("all")) {
+        if (properties.get(0) == Property.all) {
             fields = Arrays.stream(Property.values()).map(Enum::name).toList();
         } else {
             fields = properties.stream().map(Enum::name).toList();
         }
         BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery()
-                .must(QueryBuilders.multiMatchQuery(searchText, fields.toArray(new String[0])));
+                .must(QueryBuilders.multiMatchQuery(searchText, fields.toArray(new String[0]))
+                        .type(MatchQuery.Type.PHRASE_PREFIX));
 
         return getSearchResponse(offset, limit, boolQueryBuilder);
     }
