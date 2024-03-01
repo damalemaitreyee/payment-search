@@ -1,13 +1,10 @@
 package com.company.searchstore.core;
 
-import com.company.searchstore.dto.Operator;
 import com.company.searchstore.dto.Property;
-import com.company.searchstore.exception.GeneralPaymentsException;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import lombok.val;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
@@ -30,7 +27,7 @@ public class SearchCoreService {
     private RestHighLevelClient elasticsearchClient;
 
     public SearchResponse multiMatch(List<Property> properties, String searchText,
-            Long offset, Long limit) {
+            Long offset, Long limit) throws IOException {
         List<String> fields;
         if (properties.get(0) == Property.all) {
             fields = Arrays.stream(Property.values()).map(Enum::name).toList();
@@ -45,7 +42,7 @@ public class SearchCoreService {
     }
 
     public SearchResponse matchPhrasePrefix(Property field, String searchText,
-            Long offset, Long limit) {
+            Long offset, Long limit) throws IOException {
 
         BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery()
                 .must(QueryBuilders.matchPhrasePrefixQuery(field.name(), searchText));
@@ -54,7 +51,7 @@ public class SearchCoreService {
     }
 
     public SearchResponse match(Property field, String searchText, Long offset,
-            Long limit) {
+            Long limit) throws IOException {
         BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery()
                 .must(QueryBuilders.matchQuery(field.name(), searchText));
 
@@ -62,21 +59,23 @@ public class SearchCoreService {
     }
 
     private SearchResponse getSearchResponse(Long offset, Long limit,
-            BoolQueryBuilder boolQueryBuilder) {
+            BoolQueryBuilder boolQueryBuilder) throws IOException {
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         searchSourceBuilder.size(Math.toIntExact(limit));
         searchSourceBuilder.from(Math.toIntExact(offset));
         searchSourceBuilder.trackTotalHits(true);
         searchSourceBuilder.query(boolQueryBuilder);
+        String[] includeFields = new String[]{"*"};
+        String[] excludeFields = new String[]{"log.file.path", "@version", "@timestamp", "event.original", "message",
+                "host.name"};
+        searchSourceBuilder.fetchSource(includeFields, excludeFields);
         SearchRequest searchRequest = new SearchRequest();
         searchRequest.indices(index);
         searchRequest.source(searchSourceBuilder);
         org.elasticsearch.action.search.SearchResponse searchResponse;
-        try {
-            searchResponse = elasticsearchClient.search(searchRequest, RequestOptions.DEFAULT);
-        } catch (IOException e) {
-            throw new GeneralPaymentsException(e, "Error while querying elastic search");
-        }
+
+        searchResponse = elasticsearchClient.search(searchRequest, RequestOptions.DEFAULT);
+
         return searchResponse;
     }
 }
