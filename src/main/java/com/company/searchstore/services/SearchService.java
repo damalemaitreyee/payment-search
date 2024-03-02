@@ -1,19 +1,18 @@
 package com.company.searchstore.services;
 
+import co.elastic.clients.elasticsearch.core.search.Hit;
+import com.company.searchstore.core.SearchCoreServiceClient;
+import com.company.searchstore.dto.Operator;
+import com.company.searchstore.dto.PaymentSearchRequest;
+import com.company.searchstore.dto.PaymentSearchResponse;
+import com.company.searchstore.dto.Property;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.ArrayList;
-import org.elasticsearch.action.search.SearchResponse;
-import com.company.searchstore.core.SearchCoreService;
-import com.company.searchstore.dto.Operator;
-import com.company.searchstore.dto.PaymentSearchRequest;
-import com.company.searchstore.dto.Property;
-import com.company.searchstore.dto.PaymentSearchResponse;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.elasticsearch.search.SearchHit;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -23,7 +22,7 @@ import org.springframework.stereotype.Service;
 public class SearchService {
 
     @Autowired
-    SearchCoreService searchCoreService;
+    SearchCoreServiceClient searchCoreServiceClient;
 
     ObjectMapper objectMapper = new ObjectMapper();
 
@@ -32,7 +31,7 @@ public class SearchService {
         Operator operator = searchRequest.getOperator();
         List<Property> properties = searchRequest.getProperty();
         String searchText = searchRequest.getSearchText();
-        SearchResponse response;
+        co.elastic.clients.elasticsearch.core.SearchResponse<JsonNode> response;
 
         if (properties.get(0) == Property.all) {
             if (operator != Operator.multi_match) {
@@ -42,30 +41,31 @@ public class SearchService {
         }
 
         response = switch (operator) {
-            case match -> searchCoreService.match(properties.get(0), searchText, offset, limit);
+            case match -> searchCoreServiceClient.match(properties.get(0), searchText, offset, limit);
             case match_phrase_prefix ->
-                    searchCoreService.matchPhrasePrefix(properties.get(0), searchText, offset, limit);
-            case multi_match -> searchCoreService.multiMatch(properties, searchText, offset, limit);
+                    searchCoreServiceClient.matchPhrasePrefix(properties.get(0), searchText, offset, limit);
+            case multi_match -> searchCoreServiceClient.multiMatch(properties, searchText, offset, limit);
         };
 
         return mapPaymentResponse(limit, offset, response);
     }
 
-    private PaymentSearchResponse mapPaymentResponse(Long limit, Long offset, SearchResponse response) {
-        SearchHit[] searchHit = response.getHits().getHits();
+    private PaymentSearchResponse mapPaymentResponse(Long limit, Long offset, co.elastic.clients.elasticsearch.core.SearchResponse<JsonNode> response) {
+        List<Hit<JsonNode>> hits = response.hits().hits();
 
         List<JsonNode> generalPayments = new ArrayList<>();
 
-        for (SearchHit hit : searchHit) {
-            JsonNode payment = objectMapper.convertValue(hit.getSourceAsMap(), JsonNode.class);
-            generalPayments.add(payment);
+        for (Hit<JsonNode> hit: hits) {
+            JsonNode row = hit.source();
+           generalPayments.add(row);
         }
 
         return PaymentSearchResponse.builder()
                 .payments(generalPayments)
                 .limit(limit)
                 .offset(offset)
-                .totalCount(response.getHits().getTotalHits().value)
+                .totalCount(response.hits().total().value())
                 .build();
     }
+
 }

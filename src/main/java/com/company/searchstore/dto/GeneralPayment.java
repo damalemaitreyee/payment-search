@@ -12,7 +12,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class GeneralPayment {
-
+    private String Covered_Recipient_First_Name;
+    private String Covered_Recipient_Last_Name;
+    private String Recipient_City;
+    private String Recipient_Country;
+    private String Covered_Recipient_Specialty_1;
     private String Change_Type;
     private String Covered_Recipient_Type;
     private String Teaching_Hospital_CCN;
@@ -20,16 +24,12 @@ public class GeneralPayment {
     private String Teaching_Hospital_Name;
     private String Covered_Recipient_Profile_ID;
     private String Covered_Recipient_NPI;
-    private String Covered_Recipient_First_Name;
     private String Covered_Recipient_Middle_Name;
-    private String Covered_Recipient_Last_Name;
     private String Covered_Recipient_Name_Suffix;
     private String Recipient_Primary_Business_Street_Address_Line1;
     private String Recipient_Primary_Business_Street_Address_Line2;
-    private String Recipient_City;
     private String Recipient_State;
     private String Recipient_Zip_Code;
-    private String Recipient_Country;
     private String Recipient_Province;
     private String Recipient_Postal_Code;
     private String Covered_Recipient_Primary_Type_1;
@@ -38,7 +38,6 @@ public class GeneralPayment {
     private String Covered_Recipient_Primary_Type_4;
     private String Covered_Recipient_Primary_Type_5;
     private String Covered_Recipient_Primary_Type_6;
-    private String Covered_Recipient_Specialty_1;
     private String Covered_Recipient_Specialty_2;
     private String Covered_Recipient_Specialty_3;
     private String Covered_Recipient_Specialty_4;
