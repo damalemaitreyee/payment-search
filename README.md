@@ -16,24 +16,28 @@ The application can run in 2 modes -
 
 ### Run in local mode
 Set up following properties in application.properties file
-`
+
 * es.connection.type=local
-* es.local.url=<connection url>
-* es.local.user=<username>
-* es.local.password=<password>
+* es.local.url=connection url
+* es.local.user=username
+* es.local.password=password
+
+
+Run the command
+  
+  ` mvn clean compile`
+  `mvn spring-boot:run
   `
-  Run the command
-  `
-  mvn spring-boot:run
-  `
+  
 
 ### Run in cloud mode
 Set up following properties in application.properties file
 
-es.cloud.apikey=<your api key>
-es.cloud.url=<connection url>
+* es.cloud.apikey=your api key
+* es.cloud.url=connection url
 
 Run the command
+`mvn clean compile`
 `
 mvn spring-boot:run
 `

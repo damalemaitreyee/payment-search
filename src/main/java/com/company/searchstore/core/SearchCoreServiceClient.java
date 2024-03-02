@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -33,9 +34,9 @@ public class SearchCoreServiceClient {
                                      Long offset, Long limit) throws IOException {
         List<String> fields;
         if (properties.get(0) == Property.all) {
-            fields = Arrays.stream(Property.values()).map(Enum::name).toList();
+            fields = Arrays.stream(Property.values()).map(Enum::name).collect(Collectors.toList());
         } else {
-            fields = properties.stream().map(Enum::name).toList();
+            fields = properties.stream().map(Enum::name).collect(Collectors.toList());
         }
         var multiMatchQ = Query.of(q ->
                 q.multiMatch(MultiMatchQuery.of(m -> m.fields(fields)
