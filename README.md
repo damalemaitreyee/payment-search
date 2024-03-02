@@ -9,6 +9,7 @@ This project represents the back-end api responsible for performing search queri
 * Elasticsearch Java Client
 
 ## How to run
+Clone down this repository. You will need java 11 and maven installed on your machine.
 The application can run in 2 modes -
 * local
 * cloud

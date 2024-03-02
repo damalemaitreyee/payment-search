@@ -31,7 +31,7 @@ public class SearchService {
         Operator operator = searchRequest.getOperator();
         List<Property> properties = searchRequest.getProperty();
         String searchText = searchRequest.getSearchText();
-        co.elastic.clients.elasticsearch.core.SearchResponse<JsonNode> response;
+        co.elastic.clients.elasticsearch.core.SearchResponse<JsonNode> response = null;
 
         if (properties.get(0) == Property.all) {
             if (operator != Operator.multi_match) {
@@ -39,13 +39,17 @@ public class SearchService {
                         "If you are searching in all search fields, then you have to pass multi_match as a operator");
             }
         }
-
-        response = switch (operator) {
-            case match -> searchCoreServiceClient.match(properties.get(0), searchText, offset, limit);
-            case match_phrase_prefix ->
-                    searchCoreServiceClient.matchPhrasePrefix(properties.get(0), searchText, offset, limit);
-            case multi_match -> searchCoreServiceClient.multiMatch(properties, searchText, offset, limit);
-        };
+        switch (operator){
+            case match:
+                response =  searchCoreServiceClient.match(properties.get(0), searchText, offset, limit);
+                break;
+            case match_phrase_prefix:
+                response =  searchCoreServiceClient.matchPhrasePrefix(properties.get(0), searchText, offset, limit);
+                break;
+            case multi_match:
+                response =  searchCoreServiceClient.multiMatch(properties, searchText, offset, limit);
+                break;
+        }
 
         return mapPaymentResponse(limit, offset, response);
     }
